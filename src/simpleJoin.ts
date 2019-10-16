@@ -1,7 +1,8 @@
-import { uniq } from "lodash";
 import { Service } from "@feathersjs/feathers";
 
-interface IOptionsDefinition {
+//TODO: Remove lodash dependency.
+
+export interface IOptionsDefinition {
   with: { service: Service<any>; as: string; local: string; remote: string };
   through?: { service: Service<any>; local: string; remote: string };
   include?: string[];
@@ -47,8 +48,15 @@ interface IOptionsDefinition {
  * @param options
  */
 
-export async function simpleJoin(records: any, options: IOptionsDefinition) {
-  // TODO: clone records
+export default async function simpleJoin(
+  records: any,
+  options: IOptionsDefinition
+): Promise<any> {
+  // Don't do anything at all if we have an empty record set
+  if (!records || (Array.isArray(records) && !records.length)) {
+    return records;
+  }
+
   if (!options.with)
     throw new Error('feathers-simple-join: Cannot call without "with" defined');
   if (options.include && options.exclude)
@@ -56,15 +64,31 @@ export async function simpleJoin(records: any, options: IOptionsDefinition) {
       "feathers-simple-join: Cannot have both includes and excludes"
     );
 
+  // TODO: deep clone records
+  let workingRecords;
+
+  // If we are working with paginated data we need to extract the data
+  let paginated = false;
+  if (records.data && records.total) {
+    workingRecords = records.data;
+    paginated = true;
+  } else {
+    workingRecords = records;
+  }
+
+  // If we are working with a single record, we need to force it into an array so it can be processed in the same manner
   let forcedArray = false;
-  if (!Array.isArray(records)) {
-    records = [records];
+  if (!Array.isArray(workingRecords)) {
+    workingRecords = [workingRecords];
     forcedArray = true;
   }
 
   // Joining:
 
-  const localIds = uniq(records.map((r: any) => r[options.with.local]));
+  //get a set of unique ids from our local record set (there are probably records with duplicate remote keys)
+  const localIds = Array.from(
+    new Set(workingRecords.map((r: any) => r[options.with.local]))
+  );
 
   if (options.through) {
     // Join array with join table
@@ -72,7 +96,8 @@ export async function simpleJoin(records: any, options: IOptionsDefinition) {
     const joins = await options.through.service.find({
       query: {
         [options.through.local]: { $in: localIds }
-      }
+      },
+      paginate: false
     });
 
     const remotesFromJoin = joins.map((j: any) => j[options.through!.remote]);
@@ -80,10 +105,11 @@ export async function simpleJoin(records: any, options: IOptionsDefinition) {
     const remotes = await options.with.service.find({
       query: {
         [options.with.remote]: { $in: remotesFromJoin }
-      }
+      },
+      paginate: false
     });
 
-    records = records.map((r: any) => {
+    workingRecords = workingRecords.map((r: any) => {
       const remoteJoinsForRecord = joins
         .filter((j: any) => j[options.through!.local] === r[options.with.local])
         .map((j: any) => j[options.through!.remote]);
@@ -97,9 +123,10 @@ export async function simpleJoin(records: any, options: IOptionsDefinition) {
     const remotes = await options.with.service.find({
       query: {
         [options.with.remote]: { $in: localIds }
-      }
+      },
+      paginate: false
     });
-    records = records.map((r: any) => {
+    workingRecords = workingRecords.map((r: any) => {
       r[options.with.as] = remotes.find(
         (rm: any) => rm[options.with.remote] === r[options.with.local]
       );
@@ -107,9 +134,9 @@ export async function simpleJoin(records: any, options: IOptionsDefinition) {
   }
 
   // Field Filtering:
-  
+
   if (options.include && options.include.length) {
-    records = records.map((r: any) => {
+    workingRecords = workingRecords.map((r: any) => {
       let joinedRecord = r[options.with.as];
       if (Array.isArray(joinedRecord)) {
         joinedRecord = joinedRecord.map((jr: any) => {
@@ -117,7 +144,8 @@ export async function simpleJoin(records: any, options: IOptionsDefinition) {
           for (const include of options.include!) {
             if (jr[include]) fields[include] = jr[include];
           }
-          joinedRecord = fields;
+          jr = fields;
+          return jr;
         });
       } else {
         const fields: any = {};
@@ -130,7 +158,33 @@ export async function simpleJoin(records: any, options: IOptionsDefinition) {
       return r;
     });
   } else if (options.exclude) {
-    // TODO
+    workingRecords = workingRecords.map((r: any) => {
+      let joinedRecord = r[options.with.as];
+      if (Array.isArray(joinedRecord)) {
+        joinedRecord = joinedRecord.map((jr: any) => {
+          for (const exclude of options.exclude!) {
+            delete jr[exclude];
+          }
+          return jr;
+        });
+      } else {
+        const fields: any = {};
+        for (const exclude of options.exclude!) {
+          delete joinedRecord[exclude];
+        }
+      }
+      r[options.with.as] = joinedRecord;
+      return r;
+    });
   }
-  return records;
+
+  // Convert back into a single record in the case we forced an array for working purposes
+  if (forcedArray) workingRecords = workingRecords[0];
+
+  // Make sure we put the data where it belongs if we were working from paginated data
+  if (paginated) {
+    records.data = workingRecords;
+  } else {
+    records = workingRecords;
+  }
 }

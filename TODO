@@ -1,0 +1,5 @@
+/* TODO - Is there a way to optimize the includes/excludes with built in feathers query params vs manually processing?
+  - This is the main performance drawback
+  - Its possible fastJoin has an implementation we can look at if fastjoin has filtered field joins. 
+  - even if not, theres probably a way to optimize vs the way its being done now.
+*/
