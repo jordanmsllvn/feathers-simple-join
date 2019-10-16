@@ -1,0 +1,45 @@
+{
+  "name": "@ignilogic/feathers-simple-join",
+  "version": "0.1.0",
+  "description": "Provides an optimized join utility and hook for simple joins using direct foreign keys or join tables.",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "scripts": {
+    "test": "jest --config jestconfig.json --passWithNoTests",
+    "build": "tsc",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "author": "Jordan Sullivan <jordanmsllvn@gmail.com>",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ignilogic/feathers-simple-join.git"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.18",
+    "eslint": "^6.5.1",
+    "jest": "^24.9.0",
+    "prettier": "^1.18.2",
+    "ts-jest": "^24.1.0",
+    "ts-mockery": "^1.2.0",
+    "tslint": "^5.20.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.6.3"
+  },
+  "dependencies": {
+    "@feathersjs/feathers": "^4.3.4",
+    "lodash": "^4.17.15"
+  }
+}

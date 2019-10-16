@@ -1,0 +1,10 @@
+{
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "rules": {
+    "curly": [false],
+    "object-literal-sort-keys": false,
+    "ordered-imports": false,
+    "triple-equals": [true, "allow-null-check", "allow-undefined-check"],
+    "no-null-keyword": true
+  }
+}
