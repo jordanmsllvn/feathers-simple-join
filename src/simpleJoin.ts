@@ -83,7 +83,7 @@ export default async function simpleJoin(
 
   // Joining:
 
-  //get a set of unique ids from our local record set (there are probably records with duplicate remote keys)
+  // get a set of unique ids from our local record set (there are probably records with duplicate remote keys)
   const localIds = Array.from(
     new Set(workingRecords.map((r: any) => r[options.with.local]))
   );

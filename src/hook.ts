@@ -58,7 +58,7 @@ export default (options: IHookOptionsDefinition) => async (
       `feathers-simple-join: The simpleJoinHook can only be used as an after hook.`
     );
   }
-  let finalOptions: IOptionsDefinition = {
+  const finalOptions: IOptionsDefinition = {
     with: {
       ...options.with,
       service: context.app.service(options.with.service)
