@@ -114,8 +114,9 @@ export default async function simpleJoin(
         .filter((j: any) => j[options.through!.local] === r[options.with.local])
         .map((j: any) => j[options.through!.remote]);
       r[options.with.as] = remotes.filter((rm: any) =>
-        remoteJoinsForRecord.indexOf(rm[options.with.remote] > -1)
+        remoteJoinsForRecord.indexOf(rm[options.with.remote]) > -1
       );
+      return r;
     });
   } else {
     // Join single record with foreign key
@@ -130,6 +131,7 @@ export default async function simpleJoin(
       r[options.with.as] = remotes.find(
         (rm: any) => rm[options.with.remote] === r[options.with.local]
       );
+      return r;
     });
   }
 
@@ -187,4 +189,6 @@ export default async function simpleJoin(
   } else {
     records = workingRecords;
   }
+
+  return records;
 }
