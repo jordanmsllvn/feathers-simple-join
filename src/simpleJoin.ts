@@ -1,7 +1,5 @@
 import { Service } from "@feathersjs/feathers";
 
-//TODO: Remove lodash dependency.
-
 export interface IOptionsDefinition {
   with: { service: Service<any>; as: string; local: string; remote: string };
   through?: { service: Service<any>; local: string; remote: string };
@@ -113,8 +111,8 @@ export default async function simpleJoin(
       const remoteJoinsForRecord = joins
         .filter((j: any) => j[options.through!.local] === r[options.with.local])
         .map((j: any) => j[options.through!.remote]);
-      r[options.with.as] = remotes.filter((rm: any) =>
-        remoteJoinsForRecord.indexOf(rm[options.with.remote]) > -1
+      r[options.with.as] = remotes.filter(
+        (rm: any) => remoteJoinsForRecord.indexOf(rm[options.with.remote]) > -1
       );
       return r;
     });
@@ -144,7 +142,7 @@ export default async function simpleJoin(
         joinedRecord = joinedRecord.map((jr: any) => {
           const fields: any = {};
           for (const include of options.include!) {
-            if (jr[include]) fields[include] = jr[include];
+            if (typeof jr[include] !== undefined) fields[include] = jr[include];
           }
           jr = fields;
           return jr;
@@ -152,7 +150,8 @@ export default async function simpleJoin(
       } else {
         const fields: any = {};
         for (const include of options.include!) {
-          if (joinedRecord[include]) fields[include] = joinedRecord[include];
+          if (typeof joinedRecord[include] !== undefined)
+            fields[include] = joinedRecord[include];
         }
         joinedRecord = fields;
       }
