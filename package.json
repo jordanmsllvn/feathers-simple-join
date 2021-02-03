@@ -1,5 +1,5 @@
 {
-  "name": "@ignilogic/feathers-simple-join",
+  "name": "@jordanmsllvn/feathers-simple-join",
   "version": "0.1.0",
   "description": "Provides an optimized join utility and hook for simple joins using direct foreign keys or join tables.",
   "main": "lib/index.js",
@@ -28,7 +28,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ignilogic/feathers-simple-join.git"
+    "url": "https://github.com/jordanmsllvn/feathers-simple-join.git"
   },
   "devDependencies": {
     "@types/jest": "^24.0.18",
