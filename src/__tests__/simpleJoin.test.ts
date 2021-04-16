@@ -54,15 +54,15 @@ app
 app
   .service("join")
   .create([
-    { aId: 0, bId: 0 },
-    { aId: 0, bId: 1 },
-    { aId: 0, bId: 2 },
-    { aId: 1, bId: 0 },
-    { aId: 1, bId: 1 },
-    { aId: 1, bId: 2 },
-    { aId: 2, bId: 3 },
-    { aId: 2, bId: 4 },
-    { aId: 2, bId: 5 }
+    { aId: 0, bId: 0, attached: 0 },
+    { aId: 0, bId: 1, attached: 1 },
+    { aId: 0, bId: 2, attached: 2 },
+    { aId: 1, bId: 0, attached: 3 },
+    { aId: 1, bId: 1, attached: 4 },
+    { aId: 1, bId: 2, attached: 5 },
+    { aId: 2, bId: 3, attached: 6 },
+    { aId: 2, bId: 4 , attached: 7 },
+    { aId: 2, bId: 5, attached: 8 }
   ]);
 
 test("Single result join works as expected on single record", async () => {
@@ -306,4 +306,21 @@ test("Exclude option works as expected on multiple (join table) records", async 
   expect(newResult.joinedBs[1].service).toBeUndefined();
   expect(newResult.joinedBs[2].id).toBe(2);
   expect(newResult.joinedBs[2].service).toBeUndefined();
+});
+
+test("Attachments option works as expected on join table records", async () => {
+  const result = await app.service("a").get(0);
+  const newResult = await simpleJoin(result, {
+    with: {
+      service: app.service("b"),
+      as: "joinedBs",
+      local: "id",
+      remote: "id"
+    },
+    through: { service: app.service("join"), local: "aId", remote: "bId", attach: ['attached'] },
+  });
+  expect(newResult.joinedBs.length).toBe(3);
+  expect(newResult.joinedBs[0].attached).toBe(0);
+  expect(newResult.joinedBs[1].attached).toBe(1);
+  expect(newResult.joinedBs[2].attached).toBe(2);
 });

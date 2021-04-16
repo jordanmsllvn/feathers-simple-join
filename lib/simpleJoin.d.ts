@@ -10,6 +10,7 @@ export interface IOptionsDefinition {
         service: Service<any>;
         local: string;
         remote: string;
+        attach?: string[];
     };
     include?: string[];
     exclude?: string[];

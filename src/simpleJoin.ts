@@ -2,7 +2,7 @@ import { Service } from "@feathersjs/feathers";
 
 export interface IOptionsDefinition {
   with: { service: Service<any>; as: string; local: string; remote: string };
-  through?: { service: Service<any>; local: string; remote: string };
+  through?: { service: Service<any>; local: string; remote: string, attach?: string[] };
   include?: string[];
   exclude?: string[];
 }
@@ -111,11 +111,23 @@ export default async function simpleJoin(
       const remoteJoinsForRecord = joins
         .filter((j: any) => j[options.through!.local] === r[options.with.local])
         .map((j: any) => j[options.through!.remote]);
-      r[options.with.as] = remotes.filter(
-        (rm: any) => remoteJoinsForRecord.indexOf(rm[options.with.remote]) > -1
-      );
+      r[options.with.as] = remotes.filter((rm: any) => remoteJoinsForRecord.indexOf(rm[options.with.remote]) > -1)
+      
+      // Attach any extra fields existing in the join records themselves
+      if(options.through!.attach && options.through!.attach.length){
+        r[options.with.as] = r[options.with.as].map((rm: any) => {
+          const throughRecord = joins.find((j: any) => { return j[options.through!.remote] === rm[options.with.remote]; })
+          for(let attachment of options.through!.attach!){
+            rm[attachment] = throughRecord[attachment];
+          }
+          return rm;
+        });
+      }
+
       return r;
     });
+
+
   } else {
     // Join single record with foreign key
 
