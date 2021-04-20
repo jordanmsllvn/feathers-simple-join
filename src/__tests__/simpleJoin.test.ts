@@ -61,8 +61,7 @@ app
     { aId: 1, bId: 1, attached: 4 },
     { aId: 1, bId: 2, attached: 5 },
     { aId: 2, bId: 3, attached: 6 },
-    { aId: 2, bId: 4 , attached: 7 },
-    { aId: 2, bId: 5, attached: 8 }
+    { aId: 2, bId: 4, attached: 7 },
   ]);
 
 test("Single result join works as expected on single record", async () => {
@@ -135,7 +134,7 @@ test("Mutiple result join works as expected on multiple (join table) records", a
   });
   expect(newResults[0].joinedBs.length).toBe(3);
   expect(newResults[1].joinedBs.length).toBe(3);
-  expect(newResults[2].joinedBs.length).toBe(3);
+  expect(newResults[2].joinedBs.length).toBe(2);
 });
 
 test("Single result join works as expected on single record when records are paginated", async () => {
@@ -191,12 +190,11 @@ test("Multiple result join works as expected on multiple (join table) records wh
   });
   expect(newResults[0].joinedBs.length).toBe(3);
   expect(newResults[1].joinedBs.length).toBe(3);
-  expect(newResults[2].joinedBs.length).toBe(3);
+  expect(newResults[2].joinedBs.length).toBe(2);
 });
 
 test("Multiple result join works as expected on single record when results are paginated ", async () => {
   const results = await app.service("a-paginated").find();
-  console.log(results);
   const newResults = await simpleJoin(results, {
     with: {
       service: app.service("b"),
@@ -233,7 +231,7 @@ test("Multiple paginated result join works as expected on multiple (join table) 
   });
   expect(newResults.data[0].joinedBs.length).toBe(3);
   expect(newResults.data[1].joinedBs.length).toBe(3);
-  expect(newResults.data[2].joinedBs.length).toBe(3);
+  expect(newResults.data[2].joinedBs.length).toBe(2);
 });
 
 test("Include option works as expected on single record", async () => {
@@ -309,8 +307,8 @@ test("Exclude option works as expected on multiple (join table) records", async 
 });
 
 test("Attachments option works as expected on join table records", async () => {
-  const result = await app.service("a").get(0);
-  const newResult = await simpleJoin(result, {
+  const results = await app.service("a").find();
+  const newResult = await simpleJoin(results, {
     with: {
       service: app.service("b"),
       as: "joinedBs",
@@ -319,8 +317,15 @@ test("Attachments option works as expected on join table records", async () => {
     },
     through: { service: app.service("join"), local: "aId", remote: "bId", attach: ['attached'] },
   });
-  expect(newResult.joinedBs.length).toBe(3);
-  expect(newResult.joinedBs[0].attached).toBe(0);
-  expect(newResult.joinedBs[1].attached).toBe(1);
-  expect(newResult.joinedBs[2].attached).toBe(2);
+  expect(newResult[0].joinedBs.length).toBe(3);
+  expect(newResult[0].joinedBs[0].attached).toBe(0);
+  expect(newResult[0].joinedBs[1].attached).toBe(1);
+  expect(newResult[0].joinedBs[2].attached).toBe(2);
+  expect(newResult[1].joinedBs.length).toBe(3);
+  expect(newResult[1].joinedBs[0].attached).toBe(3);
+  expect(newResult[1].joinedBs[1].attached).toBe(4);
+  expect(newResult[1].joinedBs[2].attached).toBe(5);
+  expect(newResult[2].joinedBs.length).toBe(2);
+  expect(newResult[2].joinedBs[0].attached).toBe(6);
+  expect(newResult[2].joinedBs[1].attached).toBe(7);
 });
